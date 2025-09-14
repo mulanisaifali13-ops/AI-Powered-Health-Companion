@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DR.S3 – Health Companion</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="chat-container">
+    <header class="chat-header">
+      <h1>🩺 DR.<span>S3</span></h1>
+      <p>Your AI-Powered Health Companion</p>
+    </header>
+
+    <div class="chat-box" id="chat-box">
+      <div class="message bot">
+        <div class="bubble">Hello! I’m DR.S3 🤖. How can I help with your health today?</div>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <input type="text" id="user-input" placeholder="Type your health question..." />
+      <button onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <script>
+    function sendMessage() {
+      const input = document.getElementById('user-input');
+      const chatBox = document.getElementById('chat-box');
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      const userBubble = document.createElement('div');
+      userBubble.className = 'message user';
+      userBubble.innerHTML = `<div class="bubble">${userMessage}</div>`;
+      chatBox.appendChild(userBubble);
+
+      input.value = "";
+
+      const botBubble = document.createElement('div');
+      botBubble.className = 'message bot loading';
+      botBubble.innerHTML = `<div class="bubble typing">...</div>`;
+      chatBox.appendChild(botBubble);
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      fetch("/get", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `msg=${encodeURIComponent(userMessage)}`,
+      })
+      .then(response => response.text())
+      .then(data => {
+        botBubble.innerHTML = `<div class="bubble">${data}</div>`;
+        botBubble.classList.remove("loading");
+      })
+      .catch(error => {
+        botBubble.innerHTML = `<div class="bubble">Error! Try again later.</div>`;
+        console.error("Error:", error);
+      });
+    }
+  </script>
+</body>
+</html>
